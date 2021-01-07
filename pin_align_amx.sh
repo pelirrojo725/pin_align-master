@@ -7,8 +7,8 @@
 full_path="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 export PIN_ALIGN_ROOT=`dirname "$full_path" | sed 's/\/bin$//'`
 #echo full_path=\"$full_path\"
-if [ -d /usr/local/bin/topViewCam ]; then
-   export PIN_ALIGN_ROOT=/usr/local/bin/topViewCam
+if [ -d /GPFS/CENTRAL/xf17id1/skinnerProjectsBackup/pinAlign/pin_align-master ]; then
+   export PIN_ALIGN_ROOT=/GPFS/CENTRAL/xf17id1/skinnerProjectsBackup/pinAlign/pin_align-master
 fi
 . $PIN_ALIGN_ROOT/pin_align_config_amx.sh
 if [ "xx${PIN_ALIGN_DEBUG}" != "xx" ]; then
@@ -228,10 +228,33 @@ if [ "xx${PIN_ALIGN_Y_UP}" != "xx" ]; then
 else
     image_pin_y2_offset_to_cent=`echo "scale=2; - $image_pin_y2_offset_to_cent / ${scaled_px_per_mm}"|bc -l`
 fi
-
 $PIN_ALIGN_ROOT/pin_align_split_info.sh ${tmp_dir}/info_image_compare_3 > ${tmp_dir}/info_image_compare_3.vars
 . ${tmp_dir}/info_image_compare_3.vars
 
+if (( $(echo "${image_pin_x1_offset_to_cent} < $MAX_X" | bc -l)  )) && (( $(echo "${image_pin_x1_offset_to_cent} > $MIN_X" | bc -l)  )); then
+    x1_check=true
+fi
+
+if (( $(echo "${image_pin_x2_offset_to_cent} < $MAX_X" | bc -l)  )) && (( $(echo "${image_pin_x2_offset_to_cent} > $MIN_X" | bc -l)  )); then
+    x2_check=true
+fi
+
+if (( $(echo "${image_pin_y2_offset_to_cent} < $MAX_Y" | bc -l)  )) && (( $(echo "${image_pin_y2_offset_to_cent} > $MIN_Y" | bc -l)  )); then
+    y_check=true
+fi
+
+if (( $(echo "${image_pin_z2_offset_to_cent} < $MAX_Z" | bc -l)  )) && (( $(echo "${image_pin_z2_offset_to_cent} > $MIN_Z" | bc -l)  )); then
+    z_check=true
+fi
+
+if [[ "$x1_check" = true && "$x2_check" = true && "$y_check" = true && "$z_check" == true ]]; then
+    echo "X, Y, Z WITHIN LIMITS"
+else
+    echo "PIN CANNOT BE CENTERED TRY MANUAL CENTERING"
+    echo "X, Y, Z VIOLATION"
+    nooutput=1
+fi
+#End
 
 
 if [ "xx${nooutput}" == "xx0" ]; then

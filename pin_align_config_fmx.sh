@@ -53,6 +53,15 @@ PIN_CROP_DEFAULT_IMAGE_HEIGHT=$((80))
 PIN_BOTTOM_WIDTH_OFFSET=$((10))
 PIN_BOTTOM_HIEGHT_OFFSET=$((270))
 
+MIN_X=$((-2))
+MAX_X=$((2))
+
+MIN_Y=$((-2))
+MAX_Y=$((2))
+
+MIN_Z=$((-2))
+MAX_Z=$((2))
+
 # width x height + horizontal offset + vertical offset (offsets origin is top left corner) Note: vertical offset must be the same for all.
 
 PIN_ALIGN_PIN_TIP_WINDOW="${PIN_ALIGN_DEFAULT_ROI_WIDTH}x${PIN_ALIGN_DEFAULT_ROI_HEIGHT}+${PIN_ALIGN_DEFAULT_ROI_WIDTH_OFFSET}+${PIN_ALIGN_DEFAULT_ROI_HEIGHT_OFFSET}"
