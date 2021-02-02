@@ -167,3 +167,4 @@ the files
 	omega_90_009.jpg omega_90_010.jpgmega_90_011.jpg
 
         are the test cases for pin_align, producing what is in all_pin.out
+# pin_check-master
