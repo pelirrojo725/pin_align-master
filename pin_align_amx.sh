@@ -250,8 +250,7 @@ fi
 if [[ "$x1_check" = true && "$x2_check" = true && "$y_check" = true && "$z_check" == true ]]; then
     echo "X, Y, Z WITHIN LIMITS"
 else
-    echo "PIN CANNOT BE CENTERED TRY MANUAL CENTERING"
-    echo "X, Y, Z VIOLATION"
+    echo "PIN CANNOT BE CENTERED, TRY MANUAL CENTERING X, Y, Z VIOLATION"
     nooutput=1
 fi
 #End
