@@ -1,58 +1,91 @@
 #/bin/bash
 
-#
-#  pin_align_config.sh -- configurable pin_align settings to be
-#  incoroprated in the pin_align scripts.  You may edit each of
-#  the following settings in this script, or you may override
-#  each setting as an enviroment variable.
-#
-#  PIN_ALIGN_DEBUG may be set to any non-null setting to enable
-#  debug mode: keep all the files generated and generating a log
-#  file on stderr containing all the error messages and generating
-#  a center if possible.  Debugging mode off will only keep the
-#  original images taken and only generate a center when there is no
-#  tilted or bent pin or cap.
-#
-#  Version 2.0 - 15 Jun 2020
-
-#  *** EDIT THE FOLLOWING LINE TO CHANGE PIXELS/MM       ***
-PIN_ALIGN_DEFAULT_PIXELS_PER_MM="20"
 ###########################################################
 
-if [ "xx${PIN_ALIGN_PIXELS_PER_MM}" == "xx" ]; then
-    PIN_ALIGN_PIXELS_PER_MM=${PIN_ALIGN_DEFAULT_PIXELS_PER_MM}
-fi
-echo "PIN_ALIGN_PIXELS_PER_MM = ${PIN_ALIGN_PIXELS_PER_MM}"
+DEFAULT_PIXELS_PER_MM="20"
+PIN_X1_OFFSET=$((15))
+
+export X_POS=1
+export Y_POS=1
+export Z_POS
 
 
-# PIN_ALIGN_ROI_WIDTH, PIN_ALIGN_ROI_HEIGHT, in pixels, and
-# PIN_ALIGN_ROI_WIDTH_OFFSET and PIN_ALIGN_ROI_HEIGHT__OFFSET
-# define the region of interest within which the analysis of
-# pin alignment is done.  The full image within which the roi
-# is defined is implicitly assumed to be 1280x1024, but those
-# values are not explicitly used, but the centers
-# PIN_ALIGN_IMAGE_WIDTH_CENTER and PIN_ALIGN_IMAGE_HEIGHT_CENTER
-# of the original image in pixels are given
+X_CENTER=$((404))
 
-# The following twelve lines give the default values
-
+Y_CENTER=$((484))
+DEFAULT_HEIGHT=$((250))
+DEFAULT_WIDTH=$((316))
 #########################################################
-PIN_ALIGN_DEFAULT_ROI_WIDTH=$((161))
-PIN_ALIGN_DEFAULT_ROI_HEIGHT=$((400))
-PIN_ALIGN_DEFAULT_ROI_WIDTH_OFFSET=$((350))
-PIN_ALIGN_DEFAULT_ROI_HEIGHT_OFFSET=$((295))
 
-PIN_ALIGN_DEFAULT_IMAGE_WIDTH_CENTER=$((405))
-PIN_ALIGN_DEFAULT_IMAGE_HEIGHT_CENTER=$((484))
+BIG_BOX_X1=$((349))
+BIG_BOX_X2=$((665))
 
-CAP_CROP_DEFAULT_IMAGE_HEIGHT=$((155))
-BOTTOM_CROP_DEFAULT_HEIGHT_OFFSET=$((245)) 
-CAP_CROP_DEFAULT_WIDTH_OFFSET=$((-7))
+BIG_BOX_Y1=$((359))
+BIG_BOX_Y2=$((609))
 
-PIN_CROP_DEFAULT_IMAGE_HEIGHT=$((80))
-PIN_BOTTOM_WIDTH_OFFSET=$((10))
-PIN_BOTTOM_HIEGHT_OFFSET=$((270))
+PIN_ALIGN_ROI_WIDTH=$(((${BIG_BOX_X2}-${BIG_BOX_X1}) / 3))
+PIN_ALIGN_ROI_HEIGHT=$((${BIG_BOX_Y2}-${BIG_BOX_Y1}))
 
+########################## pin,body,base ##########################
+
+DEFAULT_ROI_Y1=$((359))
+
+PIN_TIP_X1=$((349))
+
+PIN_TIP="${PIN_ALIGN_ROI_WIDTH}x${PIN_ALIGN_ROI_HEIGHT}+${PIN_TIP_X1}+${DEFAULT_ROI_Y1}"
+
+PIN_BODY_X1=$((454))
+
+PIN_BODY="${PIN_ALIGN_ROI_WIDTH}x${PIN_ALIGN_ROI_HEIGHT}+${PIN_BODY_X1}+${DEFAULT_ROI_Y1}"
+
+PIN_BASE_X1=$((559))
+
+PIN_BASE="${PIN_ALIGN_ROI_WIDTH}x${PIN_ALIGN_ROI_HEIGHT}+${PIN_BASE_X1}+${DEFAULT_ROI_Y1}"
+
+########################## Tilt check  parameters ##########################
+
+TILT_CHECK_X1=$((615))
+TILT_CHECK_X2=$((665))
+
+TILT_CHECK_ROI_WIDTH=$((${TILT_CHECK_X2}-${TILT_CHECK_X1}))
+
+# Tilt check top
+TILT_CHECK_TOP_Y1=$((374))
+TILT_CHECK_TOP_Y2=$((434))
+
+TILT_CHECK_TOP_HEIGHT=$((${TILT_CHECK_TOP_Y2}-${TILT_CHECK_TOP_Y1}))
+
+TILT_CHECK_TOP="${TILT_CHECK_ROI_WIDTH}x${TILT_CHECK_TOP_HEIGHT}+$((${TILT_CHECK_X1} - ${PIN_BASE_X1}))+$((${TILT_CHECK_TOP_Y1} - ${DEFAULT_ROI_Y1}))"
+
+# Tilt check bottom
+TILT_CHECK_BOTTOM_Y1=$((534))
+TILT_CHECK_BOTTOM_Y2=$((594))
+
+TILT_CHECK_BOTTOM_HEIGHT=$((${TILT_CHECK_BOTTOM_Y2}-${TILT_CHECK_BOTTOM_Y1}))
+
+TILT_CHECK_BOTTOM="${TILT_CHECK_ROI_WIDTH}x${TILT_CHECK_TOP_HEIGHT}+$((${TILT_CHECK_X1} - ${PIN_BASE_X1}))+$((${TILT_CHECK_BOTTOM_Y1} - ${DEFAULT_ROI_Y1}))"
+
+########################## Pin check parameters ##########################
+
+PIN_CHECK_ROI_WIDTH=${PIN_ALIGN_ROI_WIDTH}
+
+PIN_CHECK_X1=${PIN_BODY_X1}
+
+PIN_CHECK_TOP_Y1=$((359))
+PIN_CHECK_TOP_Y2=$((434))
+
+PIN_CHECK_TOP_HEIGHT=$((${PIN_CHECK_TOP_Y2}-${PIN_CHECK_TOP_Y1}))
+
+PIN_CHECK_TOP="${PIN_CHECK_ROI_WIDTH}x${PIN_CHECK_TOP_HEIGHT}+0+0"
+
+PIN_CHECK_BOTTOM_Y1=$((534))
+PIN_CHECK_BOTTOM_Y2=$((609))
+
+PIN_CHECK_BOTTOM_HEIGHT=$((${PIN_CHECK_BOTTOM_Y2}-${PIN_CHECK_BOTTOM_Y1}))
+
+PIN_CHECK_BOTTOM="${PIN_CHECK_ROI_WIDTH}x${PIN_CHECK_TOP_HEIGHT}+0+$((${PIN_CHECK_BOTTOM_Y1}-${PIN_CHECK_TOP_Y1}))"
+
+########################## X,Y,Z check parameters ##########################
 MIN_X=$((-2))
 MAX_X=$((2))
 
@@ -62,99 +95,13 @@ MAX_Y=$((2))
 MIN_Z=$((-2))
 MAX_Z=$((2))
 
-# width x height + horizontal offset + vertical offset (offsets origin is top left corner) Note: vertical offset must be the same for all.
-
-PIN_ALIGN_PIN_TIP_WINDOW="${PIN_ALIGN_DEFAULT_ROI_WIDTH}x${PIN_ALIGN_DEFAULT_ROI_HEIGHT}+${PIN_ALIGN_DEFAULT_ROI_WIDTH_OFFSET}+${PIN_ALIGN_DEFAULT_ROI_HEIGHT_OFFSET}"
-PIN_ALIGN_BASE_WINDOW="50x${PIN_ALIGN_DEFAULT_ROI_HEIGHT}+610+${PIN_ALIGN_DEFAULT_ROI_HEIGHT_OFFSET}"
-PIN_ALIGN_SUB_BASE_WINDOW="80x${PIN_ALIGN_DEFAULT_ROI_HEIGHT}+652+${PIN_ALIGN_DEFAULT_ROI_HEIGHT_OFFSET}"
-PIN_ALIGN_SECONDARY_PIN_TIP_WINDOW="${PIN_ALIGN_DEFAULT_ROI_WIDTH}x${PIN_ALIGN_DEFAULT_ROI_HEIGHT}+500+${PIN_ALIGN_DEFAULT_ROI_HEIGHT_OFFSET}"
-
-TOP_CAP_CROP_WINDOW="0x${CAP_CROP_DEFAULT_IMAGE_HEIGHT}+${CAP_CROP_DEFAULT_WIDTH_OFFSET}+0"
-BOTTOM_CAP_CROP_WINDOW="0x${CAP_CROP_DEFAULT_IMAGE_HEIGHT}+${CAP_CROP_DEFAULT_WIDTH_OFFSET}+${BOTTOM_CROP_DEFAULT_HEIGHT_OFFSET}"
-TOP_PIN_CROP_WINDOW="0x${PIN_CROP_DEFAULT_IMAGE_HEIGHT}+0+0"
-BOTTOM_PIN_CROP_WINDOW="0x${PIN_CROP_DEFAULT_IMAGE_HEIGHT}+${PIN_BOTTOM_WIDTH_OFFSET}+${PIN_BOTTOM_HIEGHT_OFFSET}"
-############################################################
-
-if [ "xx${PIN_ALIGN_ROI_WIDTH}" == "xx" ]; then
-    export PIN_ALIGN_ROI_WIDTH="${PIN_ALIGN_DEFAULT_ROI_WIDTH}"
-fi
-if [ "xx${PIN_ALIGN_ROI_HEIGHT}" == "xx" ]; then
-    export PIN_ALIGN_ROI_HEIGHT="${PIN_ALIGN_DEFAULT_ROI_HEIGHT}"
-fi
-if [ "xx${PIN_ALIGN_ROI_WIDTH_OFFSET}" == "xx" ]; then
-    export PIN_ALIGN_ROI_WIDTH_OFFSET=${PIN_ALIGN_DEFAULT_ROI_WIDTH_OFFSET}
-fi
-if [ "xx${PIN_ALIGN_ROI_HEIGHT_OFFSET}" == "xx" ]; then
-    export PIN_ALIGN_ROI_HEIGHT_OFFSET=${PIN_ALIGN_DEFAULT_ROI_HEIGHT_OFFSET}
-fi
-if [ "xx${PIN_ALIGN_IMAGE_WIDTH_CENTER}" == "xx" ]; then
-    export PIN_ALIGN_IMAGE_WIDTH_CENTER=${PIN_ALIGN_DEFAULT_IMAGE_WIDTH_CENTER}
-fi
-if [ "xx${PIN_ALIGN_IMAGE_HEIGHT_CENTER}" == "xx" ]; then
-    export PIN_ALIGN_IMAGE_HEIGHT_CENTER=${PIN_ALIGN_DEFAULT_IMAGE_HEIGHT_CENTER}
-fi
-
 ##############################################################
 #  *** UNCOMMENT THE FOLLOWING LINE TO ENABLE DEBUG MODE ***
-export PIN_ALIGN_DEBUG="yes"
-##############################################################
+# export PIN_ALIGN_DEBUG="yes"
+# ##############################################################
 
-if [ "xx${PIN_ALIGN_DEBUG}" != "xx" ]; then
-    echo "PIN_ALIGN: DEBUG enabled" 1>&2
+if [ "xx${PIN_ALIGN_PIXELS_PER_MM}" == "xx" ]; then
+    PIN_ALIGN_PIXELS_PER_MM=${DEFAULT_PIXELS_PER_MM}
 fi
-if [ "xx${PIN_ALIGN_DEBUG}" == "xx" ]; then
-    echo "PIN_ALIGN: DEBUG disabled" 1>&2
-fi
-
-if [ "xx${PIN_ALIGN_DEBUG}" != "xx" ]; then
-    if [ "xx${PIN_ALIGN_ROI_WIDTH}" != "xx" ]; then
-        echo "PIN_ALIGN_ROI_WIDTH: $PIN_ALIGN_ROI_WIDTH" 1>&2
-    fi
-    if [ "xx${PIN_ALIGN_ROI_HEIGHT}" != "xx" ]; then
-        echo "PIN_ALIGN_ROI_HEIGHT: $PIN_ALIGN_ROI_HEIGHT" 1>&2
-    fi
-    if [ "xx${PIN_ALIGN_ROI_WIDTH_OFFSET}" != "xx" ]; then
-        echo "PIN_ALIGN_ROI_WIDTH_OFFSET: $PIN_ALIGN_ROI_WIDTH_OFFSET" 1>&2
-    fi
-    if [ "xx${PIN_ALIGN_ROI_HEIGHT_OFFSET}" == "xx" ]; then
-        echo "PIN_ALIGN_ROI_HEIGHT_OFFSET: $PIN_ALIGN_ROI_HEIGHT_OFFSET" 1>&2
-    fi
-    if [ "xx${PIN_ALIGN_IMAGE_WIDTH_CENTER}" == "xx" ]; then
-        echo "PIN_ALIGN_IMAGE_WIDTH_CENTER: $PIN_ALIGN_IMAGE_WIDTH_CENTER" 1>&2
-    fi
-    if [ "xx${PIN_ALIGN_IMAGE_HEIGHT_CENTER}" == "xx" ]; then
-        echo "PIN_ALIGN_IMAGE_HEIGHT_CENTER: $PIN_ALIGN_IMAGE_HEIGHT_CENTER" 1>&2
-    fi
-fi
-
-# PIN_ALIGN_Y_UP may be set to any non-null setting to change to
-# direction of the Y motor axis from down to up
-#
-
-#  *** UNCOMMENT THE FOLLOWING LINE TO SET PIN_ALIGN_Y_UP ***
-export PIN_ALIGN_Y_UP=1 #Y motor axis is up"
-############################################################
-
-if [ "xx${PIN_ALIGN_DEBUG}" != "xx" ]; then
-    if [ "xx${PIN_ALIGN_Y_UP}" != "xx" ]; then
-        echo "PIN_ALIGN: Y motor axis is up" 1>&2
-    else
-        echo "PIN_ALIGN: Y motor axis is down" 1>&2
-    fi
-fi
-
-# PIN_ALIGN_Z_UP may be set to any non-null setting to change to
-# direction of the Z motor axis from down to up
-#
-
-#  *** UNCOMMENT THE FOLLOWING LINE TO SET PIN_ALIGN_Z_UP ***
-# export PIN_ALIGN_Z_UP=1;   #Z motor axis is up"
-############################################################
-
-if [ "xx${PIN_ALIGN_DEBUG}" != "xx" ]; then
-    if [ "xx${PIN_ALIGN_Z_UP}" != "xx" ]; then
-        echo "PIN_ALIGN: Z motor axis is up" 1>&2
-    else
-        echo "PIN_ALIGN: Z motor axis is down" 1>&2
-    fi
-fi
+echo "PIN_ALIGN_PIXELS_PER_MM = ${PIN_ALIGN_PIXELS_PER_MM}"
+#################################################### EOF ####################################################
