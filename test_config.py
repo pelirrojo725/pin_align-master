@@ -1,7 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import os
 import shutil
 from datetime import datetime
+import sys
 import random
 from tkinter import *
 import tkinter as tk
