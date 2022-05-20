@@ -1,0 +1,1 @@
+pin_align_config.sh
