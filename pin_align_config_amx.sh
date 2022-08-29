@@ -1,1 +1,1 @@
-2022-05-09_pin_align_config_amx.sh
+2022-08-05_pin_align_config_amx.sh
